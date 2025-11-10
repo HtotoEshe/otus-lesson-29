@@ -16,22 +16,28 @@ void replaceLastFourBytes(std::vector<char>& data, uint32_t value) {
 
 void CalcCrc(uint32_t start, uint32_t end, uint32_t prev_crc,
              uint32_t originalCrc32, uint32_t& res, std::atomic_bool& stop_fl) {
-    std::vector<uint32_t> buff(2, 0);
-    for (uint32_t i = start; i < end; ++i) {
-        if (stop_fl) {
-            break;
+    try {
+        std::vector<uint32_t> buff(2, 0);
+        for (uint32_t i = start; i < end; ++i) {
+            if (stop_fl) {
+                break;
+            }
+            buff[0] = i;
+            auto currentCrc32 =
+                crc32(reinterpret_cast<char*>(&buff[0]), sizeof(i), prev_crc);
+            if (currentCrc32 == originalCrc32) {
+                std::cout << "Success (originalCrc32 = " << originalCrc32
+                          << " currentCrc32 = " << currentCrc32 << " i = " << i
+                          << ")" << std::endl;
+                res = i;
+                stop_fl = true;
+                break;
+            }
         }
-        buff[0] = i;
-        auto currentCrc32 =
-            crc32(reinterpret_cast<char*>(&buff[0]), sizeof(i), prev_crc);
-        if (currentCrc32 == originalCrc32) {
-            std::cout << "Success (originalCrc32 = " << originalCrc32
-                      << " currentCrc32 = " << currentCrc32 << " i = " << i
-                      << ")" << std::endl;
-            res = i;
-            stop_fl = true;
-            break;
-        }
+    } catch (std::exception& e) {
+        std::cerr << "In cycle start = " << start << " to end = " << end
+                  << "got exception: " << e.what() << std::endl;
+        stop_fl = true;
     }
 }
 
