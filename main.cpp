@@ -24,7 +24,7 @@ void CalcCrc(uint32_t start, uint32_t end, uint32_t prev_crc,
             }
             buff[0] = i;
             auto currentCrc32 =
-                crc32(reinterpret_cast<char*>(&buff[0]), sizeof(i), prev_crc);
+                crc32(reinterpret_cast<char*>(&buff[0]), sizeof(i), ~prev_crc);
             if (currentCrc32 == originalCrc32) {
                 std::cout << "Success (originalCrc32 = " << originalCrc32
                           << " currentCrc32 = " << currentCrc32 << " i = " << i
